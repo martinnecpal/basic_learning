@@ -284,6 +284,14 @@ a:hover { text-decoration: underline; }
 }
 .breadcrumbs a { color: var(--text-muted); }
 
+.topbar-action {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.topbar-action:hover { color: var(--accent); }
+
 .content {
   flex: 1;
   max-width: 860px;
