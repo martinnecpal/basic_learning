@@ -20,11 +20,10 @@
         <div class="chapter-row">
           <button class="chapter-toggle" type="button" aria-expanded="{% if is_current_chapter %}true{% else %}false{% endif %}" aria-controls="sections-{{ chapter.slug }}" data-chapter-id="{{ chapter.slug }}">
             <span class="chevron" aria-hidden="true">›</span>
-          </button>
-          <a class="chapter-link{% if page.url == chapter.url %} is-active{% endif %}" href="{{ chapter.url | relative_url }}">
             <span class="chapter-index">{{ chapter.order }}</span>
-            {{ chapter.title }}
-          </a>
+            <span class="chapter-title{% if page.url == chapter.url %} is-active{% endif %}">{{ chapter.title }}</span>
+          </button>
+          <a class="chapter-open" href="{{ chapter.url | relative_url }}" aria-label="Open {{ chapter.title }} chapter page" title="Open chapter page">↗</a>
         </div>
         {% if chapter.sections %}
         <ul class="section-list" id="sections-{{ chapter.slug }}">

@@ -141,43 +141,44 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   border-radius: 8px;
+  gap: 0.15rem;
 }
 .chapter-row:hover { background: var(--accent-soft); }
 
 .chapter-toggle {
+  flex: 1;
+  min-width: 0;
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted);
-  width: 2rem;
-  height: 2.2rem;
+  color: var(--text);
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  gap: 0.5rem;
+  padding: 0.55rem 0.4rem;
+  font: inherit;
+  text-align: left;
 }
 
 .chevron {
   display: inline-block;
   transition: transform 0.15s ease;
   font-size: 1.1rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 .chapter-toggle[aria-expanded="true"] .chevron {
   transform: rotate(90deg);
 }
 
-.chapter-link {
-  flex: 1;
-  padding: 0.5rem 0.5rem 0.5rem 0;
-  color: var(--text);
+.chapter-title {
   font-weight: 600;
   font-size: 0.92rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.chapter-link:hover { text-decoration: none; }
-.chapter-link.is-active {
+.chapter-title.is-active {
   color: var(--accent);
 }
 
@@ -193,6 +194,23 @@ a:hover { text-decoration: underline; }
   font-size: 0.72rem;
   font-weight: 700;
   flex-shrink: 0;
+}
+
+.chapter-open {
+  flex-shrink: 0;
+  width: 1.9rem;
+  height: 1.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+.chapter-open:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  text-decoration: none;
 }
 
 .chapter-item.is-active-chapter > .chapter-row {
