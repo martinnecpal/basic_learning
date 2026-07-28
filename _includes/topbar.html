@@ -1,0 +1,10 @@
+<header class="topbar">
+  <button id="sidebar-open" class="icon-btn sidebar-open" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">☰</button>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ '/' | relative_url }}">Home</a>
+    {% if page.layout == 'chapter' %}
+      <span aria-hidden="true">/</span>
+      <span>{{ page.title }}</span>
+    {% endif %}
+  </nav>
+</header>

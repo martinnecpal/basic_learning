@@ -1,0 +1,47 @@
+{% assign chapters = site.chapters | sort: "order" %}
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="{{ '/' | relative_url }}" class="brand">📐 {{ site.title }}</a>
+    <button id="sidebar-close" class="icon-btn sidebar-close" aria-label="Close menu">✕</button>
+  </div>
+
+  <div class="sidebar-toolbar">
+    <button id="expand-all" class="link-btn" type="button">Expand all</button>
+    <span aria-hidden="true">·</span>
+    <button id="collapse-all" class="link-btn" type="button">Collapse all</button>
+  </div>
+
+  <nav class="chapter-nav" aria-label="Chapters">
+    <ul class="chapter-list">
+      {% for chapter in chapters %}
+      {% assign is_current_chapter = false %}
+      {% if page.url == chapter.url or page.chapter == chapter.slug %}{% assign is_current_chapter = true %}{% endif %}
+      <li class="chapter-item{% if is_current_chapter %} is-active-chapter{% endif %}">
+        <div class="chapter-row">
+          <button class="chapter-toggle" type="button" aria-expanded="{% if is_current_chapter %}true{% else %}false{% endif %}" aria-controls="sections-{{ chapter.slug }}" data-chapter-id="{{ chapter.slug }}">
+            <span class="chevron" aria-hidden="true">›</span>
+          </button>
+          <a class="chapter-link{% if page.url == chapter.url %} is-active{% endif %}" href="{{ chapter.url | relative_url }}">
+            <span class="chapter-index">{{ chapter.order }}</span>
+            {{ chapter.title }}
+          </a>
+        </div>
+        {% if chapter.sections %}
+        <ul class="section-list" id="sections-{{ chapter.slug }}">
+          {% for section in chapter.sections %}
+          <li>
+            <a href="{{ chapter.url | relative_url }}#{{ section.id }}">{{ section.title }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button id="theme-toggle" class="link-btn" type="button">Toggle theme</button>
+  </div>
+</aside>
+<div class="sidebar-backdrop" id="sidebar-backdrop"></div>

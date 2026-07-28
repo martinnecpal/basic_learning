@@ -1,0 +1,51 @@
+# Site settings
+title: Basic Learning
+description: >-
+  Study material covering the basics of algebra, vectors, tensors and matrix
+  operations — the foundations needed before learning modeling and
+  simulation of metal forming processes.
+author: Martin Necpal
+
+# If this site is served from https://<user>.github.io/basic_learning/
+# uncomment and set the line below (leave empty for a user/org root site
+# or when running `bundle exec jekyll serve` locally).
+# baseurl: "/basic_learning"
+baseurl: ""
+url: ""
+
+# Collections
+collections:
+  chapters:
+    output: true
+    permalink: /chapters/:slug/
+
+defaults:
+  - scope:
+      path: ""
+      type: chapters
+    values:
+      layout: chapter
+      mathjax: true
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: default
+
+# Build settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  auto_ids: true
+  syntax_highlighter: rouge
+
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - vendor
+  - node_modules

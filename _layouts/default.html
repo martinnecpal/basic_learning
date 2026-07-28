@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% include head.html %}
+</head>
+<body>
+  <div class="app">
+    {% include sidebar.html %}
+
+    <div class="content-area">
+      {% include topbar.html %}
+      <main class="content" id="main-content">
+        {{ content }}
+      </main>
+      <footer class="site-footer">
+        <p>&copy; {{ site.time | date: '%Y' }} {{ site.author }}. Built with Jekyll.</p>
+      </footer>
+    </div>
+  </div>
+
+  <script src="{{ '/assets/js/main.js' | relative_url }}"></script>
+</body>
+</html>
