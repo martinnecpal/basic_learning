@@ -14,7 +14,9 @@ bundle install
 bundle exec jekyll serve
 ```
 
-Then open <http://localhost:4000>.
+`_config.yml` sets `baseurl: "/basic_learning"` to match the deployed
+project page, so the dev server serves under that same path too — open
+<http://localhost:4000/basic_learning/> (not the bare root).
 
 ## Adding a chapter
 
@@ -40,10 +42,14 @@ chapter's sub-sections.
 
 ## Deploying to GitHub Pages
 
-A workflow at `.github/workflows/pages.yml` builds and deploys the site on
-every push to `main`. Enable it once under the repository's
-**Settings → Pages → Build and deployment → Source: GitHub Actions**.
+The site is currently published from this branch directly (**Settings →
+Pages → Build and deployment → Source: Deploy from a branch**), served at
+`https://martinnecpal.github.io/basic_learning/`.
 
-If the site is served from a project path such as
-`https://<user>.github.io/basic_learning/`, set `baseurl: "/basic_learning"`
-in `_config.yml`.
+There is also a workflow at `.github/workflows/pages.yml` that builds and
+deploys on every push to `main`, for when this branch is merged and Pages
+is switched to **Source: GitHub Actions** instead.
+
+If the site is ever moved to a user/org root site
+(`https://<user>.github.io/`) instead of a project path, change `baseurl`
+back to `""` in `_config.yml`.

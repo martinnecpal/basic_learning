@@ -6,12 +6,11 @@ description: >-
   simulation of metal forming processes.
 author: Martin Necpal
 
-# If this site is served from https://<user>.github.io/basic_learning/
-# uncomment and set the line below (leave empty for a user/org root site
-# or when running `bundle exec jekyll serve` locally).
-# baseurl: "/basic_learning"
-baseurl: ""
-url: ""
+# This site is served from https://martinnecpal.github.io/basic_learning/,
+# a project page, so every asset/page URL needs this path prefix. Set to ""
+# only if this ever moves to a user/org root site (https://<user>.github.io/).
+baseurl: "/basic_learning"
+url: "https://martinnecpal.github.io"
 
 # Collections
 collections:
