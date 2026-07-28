@@ -80,16 +80,59 @@
     }
   });
 
-  // Mobile drawer.
+  // Sidebar show/hide. Below 901px it's an overlay drawer (sidebar-is-open);
+  // at 901px+ it's a persistent collapse of the sidebar column (sidebar-collapsed),
+  // remembered across visits.
+  var DESKTOP_QUERY = "(min-width: 901px)";
+  var isDesktop = function () {
+    return window.matchMedia && window.matchMedia(DESKTOP_QUERY).matches;
+  };
+
+  var SIDEBAR_COLLAPSED_KEY = "sidebar-collapsed";
+  var startCollapsed = isDesktop() && localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true";
+  if (startCollapsed) {
+    app.classList.add("sidebar-collapsed");
+  }
+  if (openBtn) {
+    openBtn.setAttribute("aria-expanded", startCollapsed ? "false" : "true");
+    openBtn.setAttribute("aria-label", startCollapsed ? "Show menu" : "Hide menu");
+  }
+
   function openSidebar() {
-    app.classList.add("sidebar-is-open");
-    if (openBtn) openBtn.setAttribute("aria-expanded", "true");
+    if (isDesktop()) {
+      app.classList.remove("sidebar-collapsed");
+      try { localStorage.setItem(SIDEBAR_COLLAPSED_KEY, "false"); } catch (e) { /* ignore */ }
+    } else {
+      app.classList.add("sidebar-is-open");
+    }
+    if (openBtn) {
+      openBtn.setAttribute("aria-expanded", "true");
+      openBtn.setAttribute("aria-label", "Hide menu");
+    }
   }
   function closeSidebar() {
-    app.classList.remove("sidebar-is-open");
-    if (openBtn) openBtn.setAttribute("aria-expanded", "false");
+    if (isDesktop()) {
+      app.classList.add("sidebar-collapsed");
+      try { localStorage.setItem(SIDEBAR_COLLAPSED_KEY, "true"); } catch (e) { /* ignore */ }
+    } else {
+      app.classList.remove("sidebar-is-open");
+    }
+    if (openBtn) {
+      openBtn.setAttribute("aria-expanded", "false");
+      openBtn.setAttribute("aria-label", "Show menu");
+    }
   }
-  if (openBtn) openBtn.addEventListener("click", openSidebar);
+  function toggleSidebar() {
+    var isHidden = isDesktop()
+      ? app.classList.contains("sidebar-collapsed")
+      : !app.classList.contains("sidebar-is-open");
+    if (isHidden) {
+      openSidebar();
+    } else {
+      closeSidebar();
+    }
+  }
+  if (openBtn) openBtn.addEventListener("click", toggleSidebar);
   if (closeBtn) closeBtn.addEventListener("click", closeSidebar);
   if (backdrop) backdrop.addEventListener("click", closeSidebar);
 

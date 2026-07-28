@@ -78,6 +78,7 @@ a:hover { text-decoration: underline; }
   position: sticky;
   top: 0;
   overflow-y: auto;
+  transition: margin-left 0.2s ease, opacity 0.15s ease;
 }
 
 .sidebar-header {
@@ -125,7 +126,7 @@ a:hover { text-decoration: underline; }
 }
 .icon-btn:hover { background: var(--accent-soft); }
 
-.sidebar-close { display: none; }
+.sidebar-close { display: inline-flex; }
 
 .chapter-nav { padding: 0.4rem 0.6rem 1rem; flex: 1; }
 
@@ -273,7 +274,7 @@ a:hover { text-decoration: underline; }
   z-index: 5;
 }
 
-.sidebar-open { display: none; }
+.sidebar-open { display: inline-flex; }
 
 .breadcrumbs {
   color: var(--text-muted);
@@ -427,7 +428,17 @@ a:hover { text-decoration: underline; }
 .chapter-card h3 { margin: 0.2rem 0 0.4rem; color: var(--text); }
 .chapter-card p { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
 
-/* ---------- Responsive ---------- */
+/* ---------- Sidebar hide/show (desktop) ---------- */
+
+@media (min-width: 901px) {
+  .app.sidebar-collapsed .sidebar {
+    margin-left: calc(-1 * var(--sidebar-width));
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* ---------- Responsive (mobile drawer) ---------- */
 
 @media (max-width: 900px) {
   .sidebar {
@@ -442,8 +453,6 @@ a:hover { text-decoration: underline; }
   .app.sidebar-is-open .sidebar {
     transform: translateX(0);
   }
-  .sidebar-close { display: inline-flex; }
-  .sidebar-open { display: inline-flex; }
 
   .sidebar-backdrop {
     display: none;
