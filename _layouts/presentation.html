@@ -1,18 +1,6 @@
 ---
 layout: default
 ---
-<article class="chapter presentation-chapter">
-  <p class="chapter-eyebrow">Chapter {{ page.order }}</p>
-  <h1>{{ page.title }}</h1>
-  {% if page.summary %}<p class="chapter-summary">{{ page.summary }}</p>{% endif %}
-
-  <div class="presentation-embed">
-    <iframe src="{{ page.embed | relative_url }}" title="{{ page.title }}" loading="lazy" allowfullscreen></iframe>
-  </div>
-  <p class="presentation-hint">
-    Navigácia: šípky ‹ › v spodnej lište, bodky, alebo klávesy ←/→.
-    <a href="{{ page.embed | relative_url }}">Otvoriť na celú obrazovku</a>
-  </p>
-
-  {% include chapter-pager.html %}
-</article>
+<div class="presentation-full">
+  <iframe src="{{ page.embed | relative_url }}" title="{{ page.title }}" loading="lazy" allowfullscreen></iframe>
+</div>
