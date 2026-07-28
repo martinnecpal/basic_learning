@@ -1,7 +1,7 @@
 ---
 title: Algebra Basics
 slug: algebra
-order: 1
+order: 2
 summary: >-
   The symbols, rules, and equation-solving techniques that everything else in
   this course is built on.
@@ -92,7 +92,7 @@ $$
 $$
 
 The same idea extends to *systems* of linear equations with several
-unknowns — this is exactly what matrices in [Chapter 4](
+unknowns — this is exactly what matrices in [Chapter 5](
 {{ '/chapters/matrix-operations/' | relative_url }}) are built to solve
 efficiently.
 

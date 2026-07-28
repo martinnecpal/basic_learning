@@ -1,7 +1,7 @@
 ---
 title: Tensors
 slug: tensors
-order: 3
+order: 4
 summary: >-
   The mathematical object that generalizes scalars and vectors, and the
   language stress, strain, and material behavior are written in.

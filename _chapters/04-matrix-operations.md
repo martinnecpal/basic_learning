@@ -1,7 +1,7 @@
 ---
 title: Matrix Operations
 slug: matrix-operations
-order: 4
+order: 5
 summary: >-
   The computational toolkit for solving systems of equations and
   manipulating tensors in practice.
@@ -123,7 +123,7 @@ experiences pure tension/compression with no shear at all. Finding these
 is one of the most common post-processing steps in any forming
 simulation, used directly to predict failure and necking.
 
-This closes the loop back to [Chapter 3](
+This closes the loop back to [Chapter 4](
 {{ '/chapters/tensors/' | relative_url }}): every tensor operation used
 in mechanics — rotating stress into a new coordinate system, contracting
 it with a stiffness tensor, finding principal values — is executed as one

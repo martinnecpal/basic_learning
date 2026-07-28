@@ -1,7 +1,7 @@
 ---
 title: Vectors
 slug: vectors
-order: 2
+order: 3
 summary: >-
   Quantities with both magnitude and direction — displacement, velocity,
   and force — and the operations you can do with them.
