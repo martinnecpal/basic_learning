@@ -366,6 +366,24 @@ a:hover { text-decoration: underline; }
   color: var(--text-muted);
 }
 
+.chapter-body .interactive-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.8rem 0 1.2rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+.chapter-body .interactive-cta:hover {
+  filter: brightness(0.97);
+  text-decoration: none;
+}
+
 .presentation-embed {
   margin: 1.5rem 0 1rem;
   border-radius: 16px;
