@@ -197,6 +197,8 @@ Tento princíp je základom pri:
 - kombinácii posunov,
 - skladaní rýchlostí v jednoduchých modeloch.
 
+[↗ Sčítanie a odčítanie vektorov — otvoriť interaktívnu 3D vizualizáciu]({{ '/assets/interactive/vector-addition-3d.html' | relative_url }}){:.interactive-cta target="_blank" rel="noopener"}
+
 ## Násobenie vektora skalárom
 
 Ak \(\lambda\) je číslo, potom
