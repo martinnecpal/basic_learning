@@ -138,13 +138,19 @@
 
   // Theme toggle (light/dark), independent of OS preference once chosen.
   if (themeToggleBtn) {
+    var isDarkTheme = function () {
+      var current = document.documentElement.getAttribute("data-theme");
+      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      return current ? current === "dark" : prefersDark;
+    };
+
+    themeToggleBtn.setAttribute("aria-pressed", isDarkTheme() ? "true" : "false");
+
     themeToggleBtn.addEventListener("click", function () {
       var root = document.documentElement;
-      var current = root.getAttribute("data-theme");
-      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-      var isDark = current ? current === "dark" : prefersDark;
-      var next = isDark ? "light" : "dark";
+      var next = isDarkTheme() ? "light" : "dark";
       root.setAttribute("data-theme", next);
+      themeToggleBtn.setAttribute("aria-pressed", next === "dark" ? "true" : "false");
       try {
         localStorage.setItem("theme", next);
       } catch (e) {
