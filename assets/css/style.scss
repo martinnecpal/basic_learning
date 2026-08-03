@@ -279,6 +279,14 @@ a:hover { text-decoration: underline; }
 }
 .breadcrumbs a { color: var(--text-muted); }
 
+.topbar-action {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.topbar-action:hover { color: var(--accent); }
+
 .theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -419,6 +427,7 @@ a:hover { text-decoration: underline; }
   color: var(--text-muted);
 }
 
+
 .chapter-body .interactive-cta {
   display: inline-flex;
   align-items: center;
@@ -454,10 +463,16 @@ a:hover { text-decoration: underline; }
   display: block;
 }
 
-.presentation-hint {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  margin: 0 0 1.5rem;
+.presentation-full {
+  flex: 1;
+  display: flex;
+  background: var(--bg-elevated);
+}
+.presentation-full iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  display: block;
 }
 
 .chapter-pager {

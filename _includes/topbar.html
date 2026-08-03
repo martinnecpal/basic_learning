@@ -7,6 +7,9 @@
       <span>{{ page.title }}</span>
     {% endif %}
   </nav>
+  {% if page.layout == 'presentation' %}
+    <a class="topbar-action" href="{{ page.embed | relative_url }}" target="_blank" rel="noopener">Otvoriť na celú obrazovku ↗</a>
+  {% endif %}
   <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Prepnúť denný a nočný režim" aria-pressed="false">
     <span class="theme-toggle-icon theme-toggle-icon--sun" aria-hidden="true">☀️</span>
     <span class="theme-toggle-track" aria-hidden="true"><span class="theme-toggle-thumb"></span></span>
