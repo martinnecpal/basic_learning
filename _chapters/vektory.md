@@ -173,7 +173,7 @@ $$
 \mathbf{a}-\mathbf{b}=(a_x-b_x,a_y-b_y,a_z-b_z)
 $$
 
-Príklad pre \(\mathbf{a}=(2,1,-3)\) a \(\mathbf{b}=(4,-2,5)\):
+Príklad pre $$\mathbf{a}=(2,1,-3)$$ a $$\mathbf{b}=(4,-2,5)$$:
 
 $$
 \mathbf{a}+\mathbf{b}=(6,-1,2)
@@ -185,7 +185,7 @@ $$
 
 ### Geometrický význam
 
-Ak najprv vykoná objekt posun \(\mathbf{a}\) a potom posun \(\mathbf{b}\), výsledný posun je \(\mathbf{a}+\mathbf{b}\). To je dôvod, prečo je súčet vektorov prirodzeným modelom skladania účinkov v priestore.
+Ak najprv vykoná objekt posun $$\mathbf{a}$$ a potom posun $$\mathbf{b}$$, výsledný posun je $$\mathbf{a}+\mathbf{b}$$. To je dôvod, prečo je súčet vektorov prirodzeným modelom skladania účinkov v priestore.
 
 ### Ako si to predstaviť
 
@@ -201,15 +201,15 @@ Tento princíp je základom pri:
 
 ## Násobenie vektora skalárom
 
-Ak \(\lambda\) je číslo, potom
+Ak $$\lambda$$ je číslo, potom
 
 $$
 \lambda\mathbf{v}=(\lambda v_x,\lambda v_y,\lambda v_z)
 $$
 
-Ak \(\lambda>1\), vektor sa predĺži, ak \(0<\lambda<1\), skráti sa, a ak \(\lambda<0\), zmení orientáciu.
+Ak $$\lambda>1$$, vektor sa predĺži, ak $$0<\lambda<1$$, skráti sa, a ak $$\lambda<0$$, zmení orientáciu.
 
-Príklad pre \(\mathbf{v}=(2,-1,4)\):
+Príklad pre $$\mathbf{v}=(2,-1,4)$$:
 
 $$
 3\mathbf{v}=(6,-3,12)
@@ -239,7 +239,7 @@ $$
 
 Výsledok je číslo, nie vektor. Jeho význam spočíva v meraní toho, nakoľko majú vektory podobný smer.
 
-Príklad pre \(\mathbf{a}=(1,2,3)\) a \(\mathbf{b}=(4,-1,2)\):
+Príklad pre $$\mathbf{a}=(1,2,3)$$ a $$\mathbf{b}=(4,-1,2)$$:
 
 $$
 \mathbf{a}\cdot\mathbf{b}=1\cdot4+2\cdot(-1)+3\cdot2=8
@@ -306,7 +306,7 @@ Vektorový súčin:
 
 ### Pravidlo pravej ruky
 
-Ak sa prsty pravej ruky ohýbajú od \(\mathbf{a}\) k \(\mathbf{b}\), vystretý palec ukazuje smer \(\mathbf{a}\times\mathbf{b}\). Tento smer sa zmení na opačný, ak sa zmení poradie vektorov.
+Ak sa prsty pravej ruky ohýbajú od $$\mathbf{a}$$ k $$\mathbf{b}$$, vystretý palec ukazuje smer $$\mathbf{a}\times\mathbf{b}$$. Tento smer sa zmení na opačný, ak sa zmení poradie vektorov.
 
 To znamená:
 
@@ -342,15 +342,15 @@ $$
 A=(x_A,y_A,z_A)
 $$
 
-potom jeho polohový vektor je vektor vedúci od počiatku do bodu \(A\).
+potom jeho polohový vektor je vektor vedúci od počiatku do bodu $$A$$.
 
-Ak sú dané body \(A\) a \(B\), potom vektor medzi nimi je
+Ak sú dané body $$A$$ a $$B$$, potom vektor medzi nimi je
 
 $$
 \overrightarrow{AB}=B-A
 $$
 
-Príklad pre \(A=(1,2,0)\) a \(B=(4,-1,5)\):
+Príklad pre $$A=(1,2,0)$$ a $$B=(4,-1,5)$$:
 
 $$
 \overrightarrow{AB}=(3,-3,5)
@@ -370,7 +370,7 @@ $$
 
 Cieľ:
 
-1. určiť \(\overrightarrow{AB}\) a \(\overrightarrow{AC}\),
+1. určiť $$\overrightarrow{AB}$$ a $$\overrightarrow{AC}$$,
 2. určiť ich dĺžky,
 3. vypočítať skalárny súčin a uhol medzi nimi,
 4. určiť normálu na rovinu \(ABC\).
