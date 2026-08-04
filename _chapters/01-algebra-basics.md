@@ -1,7 +1,7 @@
 ---
 title: Algebra Basics
 slug: algebra
-order: 2
+order: 7
 summary: >-
   The symbols, rules, and equation-solving techniques that everything else in
   this course is built on.

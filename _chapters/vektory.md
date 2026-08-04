@@ -1,7 +1,7 @@
 ---
 title: Vektory
 slug: Vektory
-order: 6
+order: 1
 summary: >-
   Tento dokument rozvíja obsah prezentácie *Vektory v 3D* do súvislého učebného textu. Je určený ako základ pre ďalšie témy, najmä matice, lineárne zobrazenia, tenzor napätia a tenzor deformácie.
 mathjax: true
@@ -223,6 +223,8 @@ $$
 
 Ak sa zdvojnásobí sila pri zachovaní smeru, ide o násobenie vektora skalárom. Pri zápornom násobku sa smer účinku obráti, čo môže predstavovať napríklad silu pôsobiacu presne opačne.
 
+[↗ Násobenie vektora skalárom — otvoriť interaktívnu 3D vizualizáciu]({{ '/assets/interactive/vector-scalar-multiplication-3d.html' | relative_url }}){:.interactive-cta target="_blank" rel="noopener"}
+
 ## Skalárny súčin
 
 Skalárny súčin dvoch vektorov sa počíta vzťahom
@@ -255,6 +257,8 @@ $$
 
 Skalárny súčin slúži na výpočet uhla medzi vektormi a na výpočet projekcie jedného vektora do smeru druhého. V mechanike má zásadný význam napríklad pri rozklade síl alebo pri určovaní normálovej zložky účinku na ploche.
 
+[↗ Skalárny súčin a uhol medzi vektormi — otvoriť interaktívnu 3D vizualizáciu]({{ '/assets/interactive/vector-dot-product-angle-3d.html' | relative_url }}){:.interactive-cta target="_blank" rel="noopener"}
+
 ## Uhol medzi dvoma vektormi
 
 Ak sú známe dva vektory, ich uhol možno určiť zo vzťahu
@@ -280,6 +284,8 @@ $$
 ### Podrobný opis významu
 
 Uhol medzi vektormi je dôležitý všade tam, kde sa porovnáva smer jedného javu so smerom druhého. Môže ísť o smer sily voči rovine, smer posunu voči normále alebo smer rýchlosti voči osi súradnicovej sústavy.
+
+[↗ Skalárny súčin a uhol medzi vektormi — otvoriť interaktívnu 3D vizualizáciu]({{ '/assets/interactive/vector-dot-product-angle-3d.html' | relative_url }}){:.interactive-cta target="_blank" rel="noopener"}
 
 ## Vektorový súčin
 
@@ -314,6 +320,8 @@ $$
 \mathbf{a}\times\mathbf{b}=-(\mathbf{b}\times\mathbf{a})
 $$
 
+[↗ Vektorový súčin a normála na rovinu — otvoriť interaktívnu 3D vizualizáciu]({{ '/assets/interactive/vector-cross-product-normal-3d.html' | relative_url }}){:.interactive-cta target="_blank" rel="noopener"}
+
 ## Príklad: normála na rovinu
 
 Majme dva vektory ležiace v rovine:
@@ -333,6 +341,8 @@ Normála je kolmá na oba vektory ležiace v rovine. Nemusí byť jednotková; a
 ### Prečo je tento krok dôležitý
 
 Pri neskoršom štúdiu mechaniky kontinua bude normála základným vstupom pre určenie napätia na ľubovoľne orientovanej ploche. Preto je schopnosť určiť normálu z dvoch smerov v rovine úplne kľúčová.
+
+[↗ Vektorový súčin a normála na rovinu — otvoriť interaktívnu 3D vizualizáciu]({{ '/assets/interactive/vector-cross-product-normal-3d.html' | relative_url }}){:.interactive-cta target="_blank" rel="noopener"}
 
 ## Bod, polohový vektor a vektor medzi bodmi
 
@@ -359,6 +369,8 @@ $$
 ### Praktický význam
 
 Tento vzťah sa používa pri určovaní smeru hrany, posunu bodu, smeru segmentu v telese alebo pri stavbe vektorov ležiacich v jednej rovine.
+
+[↗ Bod, polohový vektor a vektor medzi bodmi — otvoriť interaktívnu 3D vizualizáciu]({{ '/assets/interactive/vector-between-points-3d.html' | relative_url }}){:.interactive-cta target="_blank" rel="noopener"}
 
 ## Komplexný riešený príklad
 

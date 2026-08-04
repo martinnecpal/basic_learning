@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vektorový súčin a normála na rovinu — interaktívna vizualizácia</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧭</text></svg>">
+<script>
+  // Match the theme the user chose on the main site (localStorage is shared, same origin).
+  (function () {
+    var saved = localStorage.getItem('theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+  })();
+</script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-elevated: #f6f7f9;
+    --text: #1c1f24;
+    --text-muted: #5b6270;
+    --border: #e3e5e9;
+    --accent: #2b6cb0;
+    --accent-soft: #e8f0fb;
+    --shadow: 0 4px 16px rgba(20, 22, 30, 0.08);
+    --axis-x: #d9534f;
+    --axis-y: #3f9142;
+    --axis-z: #2b6cb0;
+    --vec-a: #7c3aed;
+    --vec-b: #e08a1e;
+    --vec-n: #0d9488;
+    --sign-zero: #2b6cb0;
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161b;
+    --bg-elevated: #1b1e25;
+    --text: #e7e9ee;
+    --text-muted: #9aa2b1;
+    --border: #2a2e37;
+    --accent: #6ea8e8;
+    --accent-soft: #1e2a3d;
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --vec-a: #a78bfa;
+    --vec-b: #f0b555;
+    --vec-n: #2dd4bf;
+    --sign-zero: #6ea8e8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161b;
+      --bg-elevated: #1b1e25;
+      --text: #e7e9ee;
+      --text-muted: #9aa2b1;
+      --border: #2a2e37;
+      --accent: #6ea8e8;
+      --accent-soft: #1e2a3d;
+      --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      --vec-a: #a78bfa;
+      --vec-b: #f0b555;
+      --vec-n: #2dd4bf;
+      --sign-zero: #6ea8e8;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .app { position: relative; width: 100vw; height: 100vh; }
+  #scene { position: absolute; inset: 0; }
+  #labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+
+  header {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+    padding: 0.7rem 1rem;
+    background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+    pointer-events: none;
+  }
+  header a, header .title, header button { pointer-events: auto; }
+  .back-link {
+    flex-shrink: 0;
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    padding: 0.35rem 0.7rem; border-radius: 20px;
+  }
+  .back-link:hover { color: var(--accent); border-color: var(--accent); }
+  .title {
+    font-size: 0.95rem; font-weight: 600; text-align: right;
+    min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  .title small { display: block; font-weight: 400; color: var(--text-muted); font-size: 0.72rem; }
+
+  #panel-toggle {
+    display: none;
+    flex-shrink: 0;
+    background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text);
+    border-radius: 20px; padding: 0.35rem 0.8rem; font-size: 0.85rem; cursor: pointer;
+    pointer-events: auto;
+  }
+
+  aside#panel {
+    position: absolute; top: 3.2rem; right: 1rem; z-index: 10;
+    width: 280px; max-height: calc(100vh - 4.4rem); overflow-y: auto;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: 14px; box-shadow: var(--shadow);
+    padding: 0.9rem 1rem 1.1rem;
+    font-size: 0.85rem;
+  }
+  aside#panel h2 {
+    margin: 0.9rem 0 0.6rem; font-size: 0.78rem; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--text-muted); font-weight: 700;
+  }
+  aside#panel h2:first-child { margin-top: 0; }
+  .row { display: flex; align-items: center; gap: 0.5rem; margin: 0.35rem 0; }
+  .row label { flex: 0 0 1.1rem; font-weight: 700; }
+  .row.x label { color: var(--axis-x); }
+  .row.y label { color: var(--axis-y); }
+  .row.z label { color: var(--axis-z); }
+  .row input[type="range"] { flex: 1; }
+  .row input[type="number"] {
+    width: 3.4rem; background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px; padding: 0.15rem 0.3rem;
+    font-size: 0.85rem;
+  }
+
+  .vec-heading { display: flex; align-items: center; gap: 0.4rem; }
+  .swatch { width: 0.7rem; height: 0.7rem; border-radius: 50%; display: inline-block; }
+
+  .presets { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0 0.2rem; }
+  .presets button {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 0.3rem 0.5rem; font-size: 0.76rem; cursor: pointer;
+  }
+  .presets button:hover { border-color: var(--accent); color: var(--accent); }
+
+  #swap-ab {
+    width: 100%; margin-top: 0.5rem;
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.8rem; cursor: pointer;
+    font-weight: 600;
+  }
+  #swap-ab:hover { border-color: var(--accent); color: var(--accent); }
+
+  .toggles { display: flex; flex-direction: column; gap: 0.4rem; }
+  .toggles label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+
+  .stats { border-top: 1px solid var(--border); padding-top: 0.7rem; margin-top: 0.9rem; line-height: 1.55; }
+  .stats .k { color: var(--text-muted); }
+  .stats .formula { font-family: "Cambria Math", Cambria, Georgia, serif; }
+  .stats .interp { font-weight: 700; margin-top: 0.3rem; }
+
+  #reset-view {
+    width: 100%; margin-top: 0.8rem;
+    background: var(--accent-soft); color: var(--accent); border: none;
+    border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.8rem; cursor: pointer;
+    font-weight: 600;
+  }
+  #reset-view:hover { filter: brightness(0.95); }
+
+  footer {
+    position: absolute; bottom: 0.7rem; left: 50%; transform: translateX(-50%); z-index: 10;
+    color: var(--text-muted); font-size: 0.74rem; text-align: center;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    padding: 0.3rem 0.8rem; border-radius: 20px; white-space: nowrap;
+  }
+
+  .axis-label {
+    position: absolute; font-weight: 700; font-size: 0.85rem;
+    transform: translate(-50%, -50%);
+    text-shadow: 0 0 4px var(--bg), 0 0 4px var(--bg), 0 0 8px var(--bg);
+  }
+  .vec-label {
+    position: absolute; font-weight: 600; font-size: 0.8rem;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    padding: 0.1rem 0.4rem; border-radius: 6px;
+    transform: translate(8px, -50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 640px) {
+    #panel-toggle { display: block; }
+    .title small { display: none; }
+    aside#panel { display: none; width: calc(100vw - 2rem); right: 1rem; left: 1rem; }
+    aside#panel.is-open { display: block; }
+    footer { max-width: calc(100vw - 2rem); white-space: normal; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="scene"></div>
+  <div id="labels"></div>
+
+  <header>
+    <a class="back-link" href="../../chapters/vektory/">← Späť do kapitoly</a>
+    <span class="title">Vektorový súčin a normála na rovinu<small>interaktívna vizualizácia</small></span>
+    <button id="panel-toggle" aria-controls="panel" aria-expanded="false">Nastavenia</button>
+  </header>
+
+  <aside id="panel">
+    <h2 class="vec-heading"><span class="swatch" style="background:var(--vec-a)"></span> Vektor a</h2>
+    <div class="row x">
+      <label for="ax">x</label>
+      <input type="range" id="ax-range" min="-6" max="6" step="0.5" value="1">
+      <input type="number" id="ax" min="-6" max="6" step="0.5" value="1">
+    </div>
+    <div class="row y">
+      <label for="ay">y</label>
+      <input type="range" id="ay-range" min="-6" max="6" step="0.5" value="0">
+      <input type="number" id="ay" min="-6" max="6" step="0.5" value="0">
+    </div>
+    <div class="row z">
+      <label for="az">z</label>
+      <input type="range" id="az-range" min="-6" max="6" step="0.5" value="1">
+      <input type="number" id="az" min="-6" max="6" step="0.5" value="1">
+    </div>
+
+    <h2 class="vec-heading"><span class="swatch" style="background:var(--vec-b)"></span> Vektor b</h2>
+    <div class="row x">
+      <label for="bx">x</label>
+      <input type="range" id="bx-range" min="-6" max="6" step="0.5" value="0">
+      <input type="number" id="bx" min="-6" max="6" step="0.5" value="0">
+    </div>
+    <div class="row y">
+      <label for="by">y</label>
+      <input type="range" id="by-range" min="-6" max="6" step="0.5" value="2">
+      <input type="number" id="by" min="-6" max="6" step="0.5" value="2">
+    </div>
+    <div class="row z">
+      <label for="bz">z</label>
+      <input type="range" id="bz-range" min="-6" max="6" step="0.5" value="1">
+      <input type="number" id="bz" min="-6" max="6" step="0.5" value="1">
+    </div>
+
+    <div class="presets">
+      <button data-a="1,0,1" data-b="0,2,1">Príklad normály</button>
+      <button data-a="1,0,0" data-b="0,1,0">Jednotkové osi (x,y)</button>
+      <button data-a="2,1,0" data-b="4,2,0">Rovnobežné (n=0)</button>
+      <button data-a="3,0,0" data-b="0,3,1">Väčší rovnobežník</button>
+    </div>
+    <button id="swap-ab">⇄ Vymeniť a ↔ b</button>
+
+    <h2>Zobrazenie</h2>
+    <div class="toggles">
+      <label><input type="checkbox" id="show-parallelogram" checked> Zobraziť rovnobežník (obsah)</label>
+      <label><input type="checkbox" id="show-plane" checked> Zobraziť rovinu a normálu</label>
+      <label><input type="checkbox" id="auto-rotate"> Automatická rotácia</label>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <button id="reset-view">Reset pohľadu</button>
+  </aside>
+
+  <footer>Rotácia: ťahanie ľavým tlačidlom · Zoom: koliesko myši · Posun: pravé tlačidlo</footer>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const sceneEl = document.getElementById('scene');
+const labelsEl = document.getElementById('labels');
+
+const css = getComputedStyle(document.documentElement);
+const colorX = css.getPropertyValue('--axis-x').trim();
+const colorY = css.getPropertyValue('--axis-y').trim();
+const colorZ = css.getPropertyValue('--axis-z').trim();
+const colorA = css.getPropertyValue('--vec-a').trim();
+const colorB = css.getPropertyValue('--vec-b').trim();
+const colorN = css.getPropertyValue('--vec-n').trim();
+const colorZeroSign = css.getPropertyValue('--sign-zero').trim();
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+sceneEl.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 3;
+controls.maxDistance = 34;
+controls.autoRotateSpeed = 1.4;
+
+const DEFAULT_CAMERA = new THREE.Vector3(13, 10, 15);
+camera.position.copy(DEFAULT_CAMERA);
+controls.target.set(0, 0, 0);
+
+scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+// Math convention (x, y, z) is mapped onto three.js coords as (x, z, y),
+// so the z-axis renders vertically — the usual orientation for planes/normals.
+function toThree(x, y, z) {
+  return new THREE.Vector3(x, z, y);
+}
+
+const AXIS_LEN = 7;
+const axesGroup = new THREE.Group();
+scene.add(axesGroup);
+
+function addAxis(dir, color) {
+  const positive = new THREE.ArrowHelper(dir, new THREE.Vector3(0, 0, 0), AXIS_LEN, color, 0.32, 0.16);
+  axesGroup.add(positive);
+  const negGeom = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, 0, 0),
+    dir.clone().multiplyScalar(-AXIS_LEN * 0.4)
+  ]);
+  const negMat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.35 });
+  axesGroup.add(new THREE.Line(negGeom, negMat));
+  return dir.clone().multiplyScalar(AXIS_LEN + 0.6);
+}
+
+const axisLabelPositions = {
+  x: addAxis(new THREE.Vector3(1, 0, 0), colorX),
+  y: addAxis(new THREE.Vector3(0, 0, 1), colorY),
+  z: addAxis(new THREE.Vector3(0, 1, 0), colorZ)
+};
+
+const grid = new THREE.GridHelper(AXIS_LEN * 2, AXIS_LEN * 2, 0x888888, 0x888888);
+grid.material.transparent = true;
+grid.material.opacity = 0.12;
+scene.add(grid);
+
+const vectorsGroup = new THREE.Group();
+scene.add(vectorsGroup);
+
+function addArrow(group, from, to, color, opts = {}) {
+  const dir = to.clone().sub(from);
+  const len = dir.length();
+  if (len < 1e-6) return;
+  dir.normalize();
+  const headLen = opts.headLen ?? Math.min(0.4, len * 0.25);
+  const headWidth = opts.headWidth ?? Math.min(0.22, len * 0.15);
+  const arrow = new THREE.ArrowHelper(dir, from, len, color, headLen, headWidth);
+  if (opts.opacity !== undefined) {
+    arrow.line.material.transparent = true;
+    arrow.line.material.opacity = opts.opacity;
+    arrow.cone.material.transparent = true;
+    arrow.cone.material.opacity = opts.opacity;
+  }
+  group.add(arrow);
+}
+
+function makeDashedLine(points, color, opacity = 0.75) {
+  const geom = new THREE.BufferGeometry().setFromPoints(points);
+  const mat = new THREE.LineDashedMaterial({ color, dashSize: 0.18, gapSize: 0.12, transparent: true, opacity });
+  const line = new THREE.Line(geom, mat);
+  line.computeLineDistances();
+  return line;
+}
+
+function makeQuad(p0, p1, p2, p3, color, opacity) {
+  const geom = new THREE.BufferGeometry();
+  const positions = new Float32Array([
+    p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z,
+    p0.x, p0.y, p0.z, p2.x, p2.y, p2.z, p3.x, p3.y, p3.z
+  ]);
+  geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geom.computeVertexNormals();
+  const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, side: THREE.DoubleSide, depthWrite: false });
+  return new THREE.Mesh(geom, mat);
+}
+
+// --- HTML label layer (projected each frame) ---
+const labels = [];
+function addLabel(text, className, color) {
+  const el = document.createElement('div');
+  el.className = className;
+  el.textContent = text;
+  if (color) el.style.color = color;
+  labelsEl.appendChild(el);
+  const entry = { el, position: new THREE.Vector3() };
+  labels.push(entry);
+  return entry;
+}
+
+const axisLabels = {
+  x: addLabel('x', 'axis-label', colorX),
+  y: addLabel('y', 'axis-label', colorY),
+  z: addLabel('z', 'axis-label', colorZ)
+};
+axisLabels.x.position.copy(axisLabelPositions.x);
+axisLabels.y.position.copy(axisLabelPositions.y);
+axisLabels.z.position.copy(axisLabelPositions.z);
+
+const originLabel = addLabel('O', 'axis-label', null);
+originLabel.position.set(0, 0, 0);
+
+const labelA = addLabel('a', 'vec-label', colorA);
+const labelB = addLabel('b', 'vec-label', colorB);
+const labelN = addLabel('a×b', 'vec-label', colorN);
+labelA.el.style.display = 'none';
+labelB.el.style.display = 'none';
+labelN.el.style.display = 'none';
+
+// --- State + inputs ---
+const state = {
+  ax: 1, ay: 0, az: 1,
+  bx: 0, by: 2, bz: 1,
+  showParallelogram: true,
+  showPlane: true
+};
+
+const inputs = {};
+['ax', 'ay', 'az', 'bx', 'by', 'bz'].forEach((key) => {
+  inputs[key] = {
+    range: document.getElementById(key + '-range'),
+    num: document.getElementById(key)
+  };
+});
+const statsEl = document.getElementById('stats');
+
+function fmt(n) {
+  const r = Math.round(n * 100) / 100;
+  return Object.is(r, -0) ? '0' : r.toString().replace('.', ',');
+}
+
+function syncInputs() {
+  Object.keys(inputs).forEach((key) => {
+    inputs[key].range.value = state[key];
+    inputs[key].num.value = state[key];
+  });
+}
+
+function bindPair(key) {
+  const { range, num } = inputs[key];
+  const handler = (val) => {
+    state[key] = parseFloat(val);
+    syncInputs();
+    updateScene();
+  };
+  range.addEventListener('input', (e) => handler(e.target.value));
+  num.addEventListener('input', (e) => { if (e.target.value !== '' && !isNaN(e.target.value)) handler(e.target.value); });
+}
+Object.keys(inputs).forEach(bindPair);
+
+document.querySelectorAll('.presets button').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const [ax, ay, az] = btn.dataset.a.split(',').map(Number);
+    const [bx, by, bz] = btn.dataset.b.split(',').map(Number);
+    Object.assign(state, { ax, ay, az, bx, by, bz });
+    syncInputs();
+    updateScene();
+  });
+});
+
+document.getElementById('swap-ab').addEventListener('click', () => {
+  const { ax, ay, az, bx, by, bz } = state;
+  Object.assign(state, { ax: bx, ay: by, az: bz, bx: ax, by: ay, bz: az });
+  syncInputs();
+  updateScene();
+});
+
+document.getElementById('show-parallelogram').addEventListener('change', (e) => {
+  state.showParallelogram = e.target.checked;
+  updateScene();
+});
+document.getElementById('show-plane').addEventListener('change', (e) => {
+  state.showPlane = e.target.checked;
+  updateScene();
+});
+
+document.getElementById('auto-rotate').addEventListener('change', (e) => {
+  controls.autoRotate = e.target.checked;
+});
+
+document.getElementById('reset-view').addEventListener('click', () => {
+  camera.position.copy(DEFAULT_CAMERA);
+  controls.target.set(0, 0, 0);
+  controls.update();
+});
+
+const panelToggle = document.getElementById('panel-toggle');
+const panel = document.getElementById('panel');
+panelToggle.addEventListener('click', () => {
+  const open = panel.classList.toggle('is-open');
+  panelToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+
+const tmpA = new THREE.Vector3();
+
+function updateScene() {
+  vectorsGroup.clear();
+
+  const { ax, ay, az, bx, by, bz } = state;
+  const origin = new THREE.Vector3(0, 0, 0);
+  const A = toThree(ax, ay, az);
+  const B = toThree(bx, by, bz);
+
+  addArrow(vectorsGroup, origin, A, colorA);
+  labelA.el.style.display = A.length() > 1e-6 ? '' : 'none';
+  labelA.position.copy(A);
+
+  addArrow(vectorsGroup, origin, B, colorB);
+  labelB.el.style.display = B.length() > 1e-6 ? '' : 'none';
+  labelB.position.copy(B);
+
+  // Cross product must be computed in math space (ax,ay,az)/(bx,by,bz) — the
+  // render-space axis swap used by toThree() is an odd permutation and would
+  // flip the sign of a naively re-computed cross product.
+  const nx = ay * bz - az * by;
+  const ny = az * bx - ax * bz;
+  const nz = ax * by - ay * bx;
+  const nLen = Math.sqrt(nx * nx + ny * ny + nz * nz);
+
+  // Parallelogram spanned by a and b: edges + filled area, illustrating |a×b|.
+  if (state.showParallelogram) {
+    const AB = A.clone().add(B);
+    if (AB.distanceTo(A) > 1e-6) vectorsGroup.add(makeDashedLine([A, AB], colorB, 0.6));
+    if (AB.distanceTo(B) > 1e-6) vectorsGroup.add(makeDashedLine([B, AB], colorA, 0.6));
+    if (A.length() > 1e-6 && B.length() > 1e-6) {
+      vectorsGroup.add(makeQuad(origin, A, AB, B, colorN, 0.16));
+    }
+  }
+
+  // Plane spanned by a and b (through the origin), plus the normal a×b.
+  if (nLen > 1e-6) {
+    const N = toThree(nx, ny, nz).normalize().multiplyScalar(3.2);
+    addArrow(vectorsGroup, origin, N, colorN, { headLen: 0.4, headWidth: 0.22 });
+    labelN.el.style.display = '';
+    labelN.position.copy(N);
+
+    if (state.showPlane) {
+      const uMath = new THREE.Vector3(ax, ay, az).normalize();
+      const bMath = new THREE.Vector3(bx, by, bz);
+      const wMath = bMath.clone().sub(uMath.clone().multiplyScalar(bMath.dot(uMath))).normalize();
+      const size = Math.min(6.5, Math.max(2.5, Math.max(Math.hypot(ax, ay, az), Math.hypot(bx, by, bz)) * 1.3));
+      const c1m = uMath.clone().multiplyScalar(size).add(wMath.clone().multiplyScalar(size));
+      const c2m = uMath.clone().multiplyScalar(size).add(wMath.clone().multiplyScalar(-size));
+      const c3m = uMath.clone().multiplyScalar(-size).add(wMath.clone().multiplyScalar(-size));
+      const c4m = uMath.clone().multiplyScalar(-size).add(wMath.clone().multiplyScalar(size));
+      const c1 = toThree(c1m.x, c1m.y, c1m.z);
+      const c2 = toThree(c2m.x, c2m.y, c2m.z);
+      const c3 = toThree(c3m.x, c3m.y, c3m.z);
+      const c4 = toThree(c4m.x, c4m.y, c4m.z);
+      vectorsGroup.add(makeQuad(c1, c2, c3, c4, colorB, 0.1));
+    }
+  } else {
+    labelN.el.style.display = 'none';
+  }
+
+  let interpText, interpColor;
+  if (nLen > 1e-9) {
+    interpText = 'n je kolmá na a aj na b (normála roviny)';
+    interpColor = colorN;
+  } else {
+    interpText = 'a a b sú rovnobežné → a×b = 0 (rovina nie je určená)';
+    interpColor = colorZeroSign;
+  }
+
+  statsEl.innerHTML =
+    `<div><span class="k">a</span> = (${fmt(ax)}, ${fmt(ay)}, ${fmt(az)})</div>` +
+    `<div><span class="k">b</span> = (${fmt(bx)}, ${fmt(by)}, ${fmt(bz)})</div>` +
+    `<div class="formula"><span class="k">a×b</span> = <strong>(${fmt(nx)}, ${fmt(ny)}, ${fmt(nz)})</strong></div>` +
+    `<div class="formula"><span class="k">|a×b|</span> = ${fmt(nLen)} <span class="k">(obsah rovnobežníka)</span></div>` +
+    `<div class="interp" style="color:${interpColor}">${interpText}</div>`;
+}
+
+updateScene();
+
+function resize() {
+  const w = sceneEl.clientWidth || window.innerWidth;
+  const h = sceneEl.clientHeight || window.innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+}
+window.addEventListener('resize', resize);
+resize();
+
+function projectLabel(entry) {
+  tmpA.copy(entry.position).project(camera);
+  const w = sceneEl.clientWidth, h = sceneEl.clientHeight;
+  const x = (tmpA.x * 0.5 + 0.5) * w;
+  const y = (-tmpA.y * 0.5 + 0.5) * h;
+  const behind = tmpA.z > 1;
+  entry.el.style.left = x + 'px';
+  entry.el.style.top = y + 'px';
+  entry.el.style.visibility = behind ? 'hidden' : 'visible';
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+  labels.forEach(projectLabel);
+}
+animate();
+</script>
+</body>
+</html>

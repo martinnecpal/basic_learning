@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skalárny súčin a uhol medzi vektormi — interaktívna vizualizácia</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📐</text></svg>">
+<script>
+  // Match the theme the user chose on the main site (localStorage is shared, same origin).
+  (function () {
+    var saved = localStorage.getItem('theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+  })();
+</script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-elevated: #f6f7f9;
+    --text: #1c1f24;
+    --text-muted: #5b6270;
+    --border: #e3e5e9;
+    --accent: #2b6cb0;
+    --accent-soft: #e8f0fb;
+    --shadow: 0 4px 16px rgba(20, 22, 30, 0.08);
+    --axis-x: #d9534f;
+    --axis-y: #3f9142;
+    --axis-z: #2b6cb0;
+    --vec-a: #7c3aed;
+    --vec-b: #e08a1e;
+    --vec-proj: #db2777;
+    --arc: #0d9488;
+    --sign-pos: #2f8f4e;
+    --sign-zero: #2b6cb0;
+    --sign-neg: #c0392b;
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161b;
+    --bg-elevated: #1b1e25;
+    --text: #e7e9ee;
+    --text-muted: #9aa2b1;
+    --border: #2a2e37;
+    --accent: #6ea8e8;
+    --accent-soft: #1e2a3d;
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --vec-a: #a78bfa;
+    --vec-b: #f0b555;
+    --vec-proj: #f472b6;
+    --arc: #2dd4bf;
+    --sign-pos: #4ade80;
+    --sign-zero: #6ea8e8;
+    --sign-neg: #f87171;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161b;
+      --bg-elevated: #1b1e25;
+      --text: #e7e9ee;
+      --text-muted: #9aa2b1;
+      --border: #2a2e37;
+      --accent: #6ea8e8;
+      --accent-soft: #1e2a3d;
+      --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      --vec-a: #a78bfa;
+      --vec-b: #f0b555;
+      --vec-proj: #f472b6;
+      --arc: #2dd4bf;
+      --sign-pos: #4ade80;
+      --sign-zero: #6ea8e8;
+      --sign-neg: #f87171;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .app { position: relative; width: 100vw; height: 100vh; }
+  #scene { position: absolute; inset: 0; }
+  #labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+
+  header {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+    padding: 0.7rem 1rem;
+    background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+    pointer-events: none;
+  }
+  header a, header .title, header button { pointer-events: auto; }
+  .back-link {
+    flex-shrink: 0;
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    padding: 0.35rem 0.7rem; border-radius: 20px;
+  }
+  .back-link:hover { color: var(--accent); border-color: var(--accent); }
+  .title {
+    font-size: 0.95rem; font-weight: 600; text-align: right;
+    min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  .title small { display: block; font-weight: 400; color: var(--text-muted); font-size: 0.72rem; }
+
+  #panel-toggle {
+    display: none;
+    flex-shrink: 0;
+    background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text);
+    border-radius: 20px; padding: 0.35rem 0.8rem; font-size: 0.85rem; cursor: pointer;
+    pointer-events: auto;
+  }
+
+  aside#panel {
+    position: absolute; top: 3.2rem; right: 1rem; z-index: 10;
+    width: 280px; max-height: calc(100vh - 4.4rem); overflow-y: auto;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: 14px; box-shadow: var(--shadow);
+    padding: 0.9rem 1rem 1.1rem;
+    font-size: 0.85rem;
+  }
+  aside#panel h2 {
+    margin: 0.9rem 0 0.6rem; font-size: 0.78rem; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--text-muted); font-weight: 700;
+  }
+  aside#panel h2:first-child { margin-top: 0; }
+  .row { display: flex; align-items: center; gap: 0.5rem; margin: 0.35rem 0; }
+  .row label { flex: 0 0 1.1rem; font-weight: 700; }
+  .row.x label { color: var(--axis-x); }
+  .row.y label { color: var(--axis-y); }
+  .row.z label { color: var(--axis-z); }
+  .row input[type="range"] { flex: 1; }
+  .row input[type="number"] {
+    width: 3.4rem; background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px; padding: 0.15rem 0.3rem;
+    font-size: 0.85rem;
+  }
+
+  .vec-heading { display: flex; align-items: center; gap: 0.4rem; }
+  .swatch { width: 0.7rem; height: 0.7rem; border-radius: 50%; display: inline-block; }
+
+  .presets { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0 0.2rem; }
+  .presets button {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 0.3rem 0.5rem; font-size: 0.76rem; cursor: pointer;
+  }
+  .presets button:hover { border-color: var(--accent); color: var(--accent); }
+
+  .toggles { display: flex; flex-direction: column; gap: 0.4rem; }
+  .toggles label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+
+  .stats { border-top: 1px solid var(--border); padding-top: 0.7rem; margin-top: 0.9rem; line-height: 1.55; }
+  .stats .k { color: var(--text-muted); }
+  .stats .formula { font-family: "Cambria Math", Cambria, Georgia, serif; }
+  .stats .interp { font-weight: 700; margin-top: 0.3rem; }
+
+  #reset-view {
+    width: 100%; margin-top: 0.8rem;
+    background: var(--accent-soft); color: var(--accent); border: none;
+    border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.8rem; cursor: pointer;
+    font-weight: 600;
+  }
+  #reset-view:hover { filter: brightness(0.95); }
+
+  footer {
+    position: absolute; bottom: 0.7rem; left: 50%; transform: translateX(-50%); z-index: 10;
+    color: var(--text-muted); font-size: 0.74rem; text-align: center;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    padding: 0.3rem 0.8rem; border-radius: 20px; white-space: nowrap;
+  }
+
+  .axis-label {
+    position: absolute; font-weight: 700; font-size: 0.85rem;
+    transform: translate(-50%, -50%);
+    text-shadow: 0 0 4px var(--bg), 0 0 4px var(--bg), 0 0 8px var(--bg);
+  }
+  .vec-label {
+    position: absolute; font-weight: 600; font-size: 0.8rem;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    padding: 0.1rem 0.4rem; border-radius: 6px;
+    transform: translate(8px, -50%);
+    white-space: nowrap;
+  }
+  .arc-label {
+    position: absolute; font-weight: 700; font-size: 0.78rem;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    padding: 0.1rem 0.4rem; border-radius: 6px;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 640px) {
+    #panel-toggle { display: block; }
+    .title small { display: none; }
+    aside#panel { display: none; width: calc(100vw - 2rem); right: 1rem; left: 1rem; }
+    aside#panel.is-open { display: block; }
+    footer { max-width: calc(100vw - 2rem); white-space: normal; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="scene"></div>
+  <div id="labels"></div>
+
+  <header>
+    <a class="back-link" href="../../chapters/vektory/">← Späť do kapitoly</a>
+    <span class="title">Skalárny súčin a uhol medzi vektormi<small>interaktívna vizualizácia</small></span>
+    <button id="panel-toggle" aria-controls="panel" aria-expanded="false">Nastavenia</button>
+  </header>
+
+  <aside id="panel">
+    <h2 class="vec-heading"><span class="swatch" style="background:var(--vec-a)"></span> Vektor a</h2>
+    <div class="row x">
+      <label for="ax">x</label>
+      <input type="range" id="ax-range" min="-6" max="6" step="0.5" value="1">
+      <input type="number" id="ax" min="-6" max="6" step="0.5" value="1">
+    </div>
+    <div class="row y">
+      <label for="ay">y</label>
+      <input type="range" id="ay-range" min="-6" max="6" step="0.5" value="2">
+      <input type="number" id="ay" min="-6" max="6" step="0.5" value="2">
+    </div>
+    <div class="row z">
+      <label for="az">z</label>
+      <input type="range" id="az-range" min="-6" max="6" step="0.5" value="3">
+      <input type="number" id="az" min="-6" max="6" step="0.5" value="3">
+    </div>
+
+    <h2 class="vec-heading"><span class="swatch" style="background:var(--vec-b)"></span> Vektor b</h2>
+    <div class="row x">
+      <label for="bx">x</label>
+      <input type="range" id="bx-range" min="-6" max="6" step="0.5" value="4">
+      <input type="number" id="bx" min="-6" max="6" step="0.5" value="4">
+    </div>
+    <div class="row y">
+      <label for="by">y</label>
+      <input type="range" id="by-range" min="-6" max="6" step="0.5" value="-1">
+      <input type="number" id="by" min="-6" max="6" step="0.5" value="-1">
+    </div>
+    <div class="row z">
+      <label for="bz">z</label>
+      <input type="range" id="bz-range" min="-6" max="6" step="0.5" value="2">
+      <input type="number" id="bz" min="-6" max="6" step="0.5" value="2">
+    </div>
+
+    <div class="presets">
+      <button data-a="1,2,3" data-b="4,-1,2">Príklad súčinu (a·b=8)</button>
+      <button data-a="1,0,0" data-b="1,1,0">Uhol 45°</button>
+      <button data-a="1,0,0" data-b="0,1,0">Kolmé (90°)</button>
+      <button data-a="1,1,0" data-b="-1,0,0">Tupý uhol</button>
+    </div>
+
+    <h2>Zobrazenie</h2>
+    <div class="toggles">
+      <label><input type="checkbox" id="show-arc" checked> Zobraziť oblúk uhla θ</label>
+      <label><input type="checkbox" id="show-projection" checked> Zobraziť projekciu a na b</label>
+      <label><input type="checkbox" id="auto-rotate"> Automatická rotácia</label>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <button id="reset-view">Reset pohľadu</button>
+  </aside>
+
+  <footer>Rotácia: ťahanie ľavým tlačidlom · Zoom: koliesko myši · Posun: pravé tlačidlo</footer>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const sceneEl = document.getElementById('scene');
+const labelsEl = document.getElementById('labels');
+
+const css = getComputedStyle(document.documentElement);
+const colorX = css.getPropertyValue('--axis-x').trim();
+const colorY = css.getPropertyValue('--axis-y').trim();
+const colorZ = css.getPropertyValue('--axis-z').trim();
+const colorA = css.getPropertyValue('--vec-a').trim();
+const colorB = css.getPropertyValue('--vec-b').trim();
+const colorProj = css.getPropertyValue('--vec-proj').trim();
+const colorArc = css.getPropertyValue('--arc').trim();
+const colorPos = css.getPropertyValue('--sign-pos').trim();
+const colorZeroSign = css.getPropertyValue('--sign-zero').trim();
+const colorNeg = css.getPropertyValue('--sign-neg').trim();
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+sceneEl.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 3;
+controls.maxDistance = 34;
+controls.autoRotateSpeed = 1.4;
+
+const DEFAULT_CAMERA = new THREE.Vector3(13, 10, 15);
+camera.position.copy(DEFAULT_CAMERA);
+controls.target.set(0, 0, 0);
+
+scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+// Math convention (x, y, z) is mapped onto three.js coords as (x, z, y),
+// so the z-axis renders vertically — the usual orientation for planes/normals.
+function toThree(x, y, z) {
+  return new THREE.Vector3(x, z, y);
+}
+
+const AXIS_LEN = 7;
+const axesGroup = new THREE.Group();
+scene.add(axesGroup);
+
+function addAxis(dir, color) {
+  const positive = new THREE.ArrowHelper(dir, new THREE.Vector3(0, 0, 0), AXIS_LEN, color, 0.32, 0.16);
+  axesGroup.add(positive);
+  const negGeom = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, 0, 0),
+    dir.clone().multiplyScalar(-AXIS_LEN * 0.4)
+  ]);
+  const negMat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.35 });
+  axesGroup.add(new THREE.Line(negGeom, negMat));
+  return dir.clone().multiplyScalar(AXIS_LEN + 0.6);
+}
+
+const axisLabelPositions = {
+  x: addAxis(new THREE.Vector3(1, 0, 0), colorX),
+  y: addAxis(new THREE.Vector3(0, 0, 1), colorY),
+  z: addAxis(new THREE.Vector3(0, 1, 0), colorZ)
+};
+
+const grid = new THREE.GridHelper(AXIS_LEN * 2, AXIS_LEN * 2, 0x888888, 0x888888);
+grid.material.transparent = true;
+grid.material.opacity = 0.12;
+scene.add(grid);
+
+const vectorsGroup = new THREE.Group();
+scene.add(vectorsGroup);
+
+function addArrow(group, from, to, color, opts = {}) {
+  const dir = to.clone().sub(from);
+  const len = dir.length();
+  if (len < 1e-6) return;
+  dir.normalize();
+  const headLen = opts.headLen ?? Math.min(0.4, len * 0.25);
+  const headWidth = opts.headWidth ?? Math.min(0.22, len * 0.15);
+  const arrow = new THREE.ArrowHelper(dir, from, len, color, headLen, headWidth);
+  if (opts.opacity !== undefined) {
+    arrow.line.material.transparent = true;
+    arrow.line.material.opacity = opts.opacity;
+    arrow.cone.material.transparent = true;
+    arrow.cone.material.opacity = opts.opacity;
+  }
+  group.add(arrow);
+}
+
+function makeDashedLine(points, color, opacity = 0.75) {
+  const geom = new THREE.BufferGeometry().setFromPoints(points);
+  const mat = new THREE.LineDashedMaterial({ color, dashSize: 0.18, gapSize: 0.12, transparent: true, opacity });
+  const line = new THREE.Line(geom, mat);
+  line.computeLineDistances();
+  return line;
+}
+
+function makeSolidLine(points, color, opacity = 1) {
+  const geom = new THREE.BufferGeometry().setFromPoints(points);
+  const mat = new THREE.LineBasicMaterial({ color, transparent: opacity < 1, opacity });
+  return new THREE.Line(geom, mat);
+}
+
+// Spherical interpolation between two unit vectors, traced at a fixed radius —
+// visualizes the angle θ as an arc lying in the plane spanned by a and b.
+function arcPoints(unitU, unitV, radius, segments = 40) {
+  const angle = unitU.angleTo(unitV);
+  if (angle < 1e-4 || angle > Math.PI - 1e-4) return { points: [], angle, mid: null };
+  const sinAngle = Math.sin(angle);
+  const points = [];
+  let mid = null;
+  for (let i = 0; i <= segments; i++) {
+    const t = i / segments;
+    const s0 = Math.sin((1 - t) * angle) / sinAngle;
+    const s1 = Math.sin(t * angle) / sinAngle;
+    const p = unitU.clone().multiplyScalar(s0).add(unitV.clone().multiplyScalar(s1)).multiplyScalar(radius);
+    points.push(p);
+    if (i === Math.round(segments / 2)) mid = p.clone();
+  }
+  return { points, angle, mid };
+}
+
+// --- HTML label layer (projected each frame) ---
+const labels = [];
+function addLabel(text, className, color) {
+  const el = document.createElement('div');
+  el.className = className;
+  el.textContent = text;
+  if (color) el.style.color = color;
+  labelsEl.appendChild(el);
+  const entry = { el, position: new THREE.Vector3() };
+  labels.push(entry);
+  return entry;
+}
+
+const axisLabels = {
+  x: addLabel('x', 'axis-label', colorX),
+  y: addLabel('y', 'axis-label', colorY),
+  z: addLabel('z', 'axis-label', colorZ)
+};
+axisLabels.x.position.copy(axisLabelPositions.x);
+axisLabels.y.position.copy(axisLabelPositions.y);
+axisLabels.z.position.copy(axisLabelPositions.z);
+
+const originLabel = addLabel('O', 'axis-label', null);
+originLabel.position.set(0, 0, 0);
+
+const labelA = addLabel('a', 'vec-label', colorA);
+const labelB = addLabel('b', 'vec-label', colorB);
+const labelProj = addLabel('projb a', 'vec-label', colorProj);
+const labelArc = addLabel('θ', 'arc-label', colorArc);
+labelA.el.style.display = 'none';
+labelB.el.style.display = 'none';
+labelProj.el.style.display = 'none';
+labelArc.el.style.display = 'none';
+
+// --- State + inputs ---
+const state = {
+  ax: 1, ay: 2, az: 3,
+  bx: 4, by: -1, bz: 2,
+  showArc: true,
+  showProjection: true
+};
+
+const inputs = {};
+['ax', 'ay', 'az', 'bx', 'by', 'bz'].forEach((key) => {
+  inputs[key] = {
+    range: document.getElementById(key + '-range'),
+    num: document.getElementById(key)
+  };
+});
+const statsEl = document.getElementById('stats');
+
+function fmt(n) {
+  const r = Math.round(n * 100) / 100;
+  return Object.is(r, -0) ? '0' : r.toString().replace('.', ',');
+}
+
+function syncInputs() {
+  Object.keys(inputs).forEach((key) => {
+    inputs[key].range.value = state[key];
+    inputs[key].num.value = state[key];
+  });
+}
+
+function bindPair(key) {
+  const { range, num } = inputs[key];
+  const handler = (val) => {
+    state[key] = parseFloat(val);
+    syncInputs();
+    updateScene();
+  };
+  range.addEventListener('input', (e) => handler(e.target.value));
+  num.addEventListener('input', (e) => { if (e.target.value !== '' && !isNaN(e.target.value)) handler(e.target.value); });
+}
+Object.keys(inputs).forEach(bindPair);
+
+document.querySelectorAll('.presets button').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const [ax, ay, az] = btn.dataset.a.split(',').map(Number);
+    const [bx, by, bz] = btn.dataset.b.split(',').map(Number);
+    Object.assign(state, { ax, ay, az, bx, by, bz });
+    syncInputs();
+    updateScene();
+  });
+});
+
+document.getElementById('show-arc').addEventListener('change', (e) => {
+  state.showArc = e.target.checked;
+  updateScene();
+});
+document.getElementById('show-projection').addEventListener('change', (e) => {
+  state.showProjection = e.target.checked;
+  updateScene();
+});
+
+document.getElementById('auto-rotate').addEventListener('change', (e) => {
+  controls.autoRotate = e.target.checked;
+});
+
+document.getElementById('reset-view').addEventListener('click', () => {
+  camera.position.copy(DEFAULT_CAMERA);
+  controls.target.set(0, 0, 0);
+  controls.update();
+});
+
+const panelToggle = document.getElementById('panel-toggle');
+const panel = document.getElementById('panel');
+panelToggle.addEventListener('click', () => {
+  const open = panel.classList.toggle('is-open');
+  panelToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+
+const tmpA = new THREE.Vector3();
+
+function updateScene() {
+  vectorsGroup.clear();
+
+  const { ax, ay, az, bx, by, bz } = state;
+  const origin = new THREE.Vector3(0, 0, 0);
+  const A = toThree(ax, ay, az);
+  const B = toThree(bx, by, bz);
+  const magA = A.length();
+  const magB = B.length();
+
+  addArrow(vectorsGroup, origin, A, colorA);
+  labelA.el.style.display = magA > 1e-6 ? '' : 'none';
+  labelA.position.copy(A);
+
+  addArrow(vectorsGroup, origin, B, colorB);
+  labelB.el.style.display = magB > 1e-6 ? '' : 'none';
+  labelB.position.copy(B);
+
+  const dot = ax * bx + ay * by + az * bz;
+  const cosTheta = (magA > 1e-9 && magB > 1e-9) ? Math.max(-1, Math.min(1, dot / (magA * magB))) : null;
+  const angleDeg = cosTheta === null ? null : Math.acos(cosTheta) * 180 / Math.PI;
+
+  // Angle arc between the two vector directions, drawn at a fixed radius.
+  if (state.showArc && magA > 1e-6 && magB > 1e-6) {
+    const radius = Math.min(2.2, Math.max(0.7, Math.min(magA, magB) * 0.4));
+    const { points, mid } = arcPoints(A.clone().normalize(), B.clone().normalize(), radius);
+    if (points.length) {
+      vectorsGroup.add(makeSolidLine(points, colorArc));
+      labelArc.el.style.display = '';
+      labelArc.position.copy(mid);
+    } else {
+      labelArc.el.style.display = 'none';
+    }
+  } else {
+    labelArc.el.style.display = 'none';
+  }
+
+  // Projection of a onto b: proj = (a·b / |b|^2) * b, plus a perpendicular
+  // dashed drop from the tip of a — this is the geometric picture behind a·b.
+  if (state.showProjection && magB > 1e-6) {
+    const proj = B.clone().multiplyScalar(dot / (magB * magB));
+    if (proj.length() > 1e-6) {
+      addArrow(vectorsGroup, origin, proj, colorProj, { headLen: 0.32, headWidth: 0.18 });
+      labelProj.el.style.display = '';
+      labelProj.position.copy(proj);
+    } else {
+      labelProj.el.style.display = 'none';
+    }
+    if (A.distanceTo(proj) > 1e-6) {
+      vectorsGroup.add(makeDashedLine([A, proj], colorProj, 0.6));
+    }
+  } else {
+    labelProj.el.style.display = 'none';
+  }
+
+  let interpText = '';
+  let interpColor = colorZeroSign;
+  if (dot > 1e-9) { interpText = 'Ostrý uhol (a·b > 0)'; interpColor = colorPos; }
+  else if (dot < -1e-9) { interpText = 'Tupý uhol (a·b < 0)'; interpColor = colorNeg; }
+  else { interpText = 'Kolmé vektory (a·b = 0)'; interpColor = colorZeroSign; }
+
+  statsEl.innerHTML =
+    `<div><span class="k">a</span> = (${fmt(ax)}, ${fmt(ay)}, ${fmt(az)})</div>` +
+    `<div><span class="k">b</span> = (${fmt(bx)}, ${fmt(by)}, ${fmt(bz)})</div>` +
+    `<div class="formula"><span class="k">a·b</span> = <strong>${fmt(dot)}</strong></div>` +
+    `<div><span class="k">|a|</span> = ${fmt(magA)} &nbsp; <span class="k">|b|</span> = ${fmt(magB)}</div>` +
+    (cosTheta === null
+      ? ''
+      : `<div class="formula"><span class="k">cos θ</span> = ${fmt(cosTheta)}</div>` +
+        `<div class="formula"><span class="k">θ</span> = ${fmt(angleDeg)}°</div>`) +
+    `<div class="interp" style="color:${interpColor}">${interpText}</div>`;
+}
+
+updateScene();
+
+function resize() {
+  const w = sceneEl.clientWidth || window.innerWidth;
+  const h = sceneEl.clientHeight || window.innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+}
+window.addEventListener('resize', resize);
+resize();
+
+function projectLabel(entry) {
+  tmpA.copy(entry.position).project(camera);
+  const w = sceneEl.clientWidth, h = sceneEl.clientHeight;
+  const x = (tmpA.x * 0.5 + 0.5) * w;
+  const y = (-tmpA.y * 0.5 + 0.5) * h;
+  const behind = tmpA.z > 1;
+  entry.el.style.left = x + 'px';
+  entry.el.style.top = y + 'px';
+  entry.el.style.visibility = behind ? 'hidden' : 'visible';
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+  labels.forEach(projectLabel);
+}
+animate();
+</script>
+</body>
+</html>
